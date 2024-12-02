@@ -25,7 +25,7 @@ class AccountResource extends JsonResource
             'is_active' => $this->is_active,
             'created' => $this->created_at->format('Y-m-d H:i:s'),
             'updated' => $this->updated_at->format('Y-m-d H:i:s'),
-            'user' => new UserResource($this->whenLoaded('user')),
+            'user' => new UserResource($this->user),
             'transactions' => TransactionResource::collection($this->whenLoaded('transactions')),
         ];
     }
