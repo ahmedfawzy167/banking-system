@@ -34,5 +34,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'vonage' => [
+        'sms_from' => env('VONAGE_SMS_FROM'),
+        'api_key' => env('VONAGE_KEY'),
+        'api_secret' => env('VONAGE_SECRET'),
+    ],
 
 ];

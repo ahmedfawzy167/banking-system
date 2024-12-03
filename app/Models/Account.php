@@ -36,4 +36,9 @@ class Account extends Model
     {
         return $this->hasMany(Transaction::class, 'destination_account_id');
     }
+
+    public function outgoingTransfers(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'source_account_id');
+    }
 }

@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Traits\ApiResponder;
 use Illuminate\Http\Request;
+use App\Events\UserRegistered;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\Users\UserResource;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 
 class AuthController extends Controller
 {
@@ -22,6 +25,9 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Dispatch the UserRegistered Event
+        event(new UserRegistered($user));
 
         return $this->created(new UserResource($user), "Registeration is Done");
     }
@@ -56,5 +62,32 @@ class AuthController extends Controller
             $user->currentAccessToken()->delete();
         }
         return $this->success(new UserResource($user), "Logout Successfully");
+    }
+
+    public function profile(Request $request)
+    {
+        $user = $request->user();
+        return $this->success(new UserResource($user), "Profile Retrieved Successfully");
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $user = request()->user();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->save();
+        return $this->success(new UserResource($user), "Profile Updated Successfully");
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $user = request()->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return $this->error("Password Incorrect");
+        }
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+        return $this->success(new UserResource($user), "Password Updated Successfully");
     }
 }

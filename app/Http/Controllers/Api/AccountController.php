@@ -33,6 +33,7 @@ class AccountController extends Controller
             'user_id' => auth()->id(),
             'type' => $request->type,
             'currency' => $request->currency,
+            'is_active' => 1,
         ]);
 
         return $this->created(

@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Models\Account;
 use App\Traits\ApiResponder;
 use Illuminate\Http\Request;
+use App\Events\TransactionOccured;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionService;
-use App\Exceptions\InsufficientFundsException;
 use App\Http\Requests\Transaction\TransferRequest;
 use App\Http\Resources\Transactions\TransactionResource;
 use App\Http\Resources\Transactions\TransactionCollection;
@@ -17,6 +18,7 @@ class TransactionController extends Controller
     use ApiResponder;
 
     public function __construct(private TransactionService $transactionService) {}
+
 
     public function deposit(Account $account, Request $request)
     {
@@ -29,6 +31,7 @@ class TransactionController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
+        DB::beginTransaction();
         try {
             $transaction = $this->transactionService->deposit(
                 $account,
@@ -36,12 +39,23 @@ class TransactionController extends Controller
                 $validated['description'] ?? null
             );
 
-            return $this->success(
+            $account->refresh();
+
+            // Dispatch Transaction Event
+            event(new TransactionOccured(
+                $transaction,
+                'deposit',
+                "Deposit of {$validated['amount']} Completed Successfully to Account {$account->account_number}. New balance: {$account->balance}"
+            ));
+
+            DB::commit();
+            return $this->created(
                 new TransactionResource($transaction),
                 'Deposit Completed Successfully'
             );
         } catch (\Exception $e) {
-            return $this->serverError('Failed to Process Deposit');
+            DB::rollBack();
+            return $this->serverError($e->getMessage());
         }
     }
 
@@ -56,6 +70,8 @@ class TransactionController extends Controller
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
+        DB::beginTransaction();
+
         try {
             $transaction = $this->transactionService->withdraw(
                 $account,
@@ -63,13 +79,21 @@ class TransactionController extends Controller
                 $validated['description'] ?? null
             );
 
-            return $this->success(
+            $account->refresh();
+            // Dispatch transaction event
+            event(new TransactionOccured(
+                $transaction,
+                'withdrawal',
+                "Withdrawal of {$validated['amount']} Completed Successfully From Account {$account->account_number}. New balance: {$account->balance}"
+            ));
+
+            DB::commit();
+            return $this->created(
                 new TransactionResource($transaction),
                 'Withdrawal Completed Successfully'
             );
-        } catch (InsufficientFundsException $e) {
-            return $this->error('Insufficient funds for this Withdrawal', 422);
         } catch (\Exception $e) {
+            DB::rollBack();
             return $this->serverError('Failed to Process Withdrawal');
         }
     }
@@ -80,6 +104,7 @@ class TransactionController extends Controller
             return $this->forbidden('You are not Authorized to Make Transfers from this Account');
         }
 
+        DB::beginTransaction();
         try {
             $destinationAccount = Account::where('account_number', $request->destination_account_number)->firstOrFail();
 
@@ -90,14 +115,23 @@ class TransactionController extends Controller
                 $request->description
             );
 
-            return $this->success(
+            $account->refresh();
+
+            // Dispatch Transaction Event
+            event(new TransactionOccured(
+                $transaction,
+                'transfer',
+                "Transfer of {$request->amount} Completed Successfully From Account {$account->account_number} To {$destinationAccount->account_number}. New balance: {$account->balance}"
+            ));
+
+            DB::commit();
+            return $this->created(
                 new TransactionResource($transaction),
                 'Transfer Completed Successfully'
             );
-        } catch (InsufficientFundsException $e) {
-            return $this->error('Insufficient Funds for this Transfer', 422);
         } catch (\Exception $e) {
-            return $this->serverError('Failed to Process Transfer');
+            DB::rollBack();
+            return $this->serverError($e->getMessage());
         }
     }
 

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('type');
             $table->decimal('amount', 12, 2);
             $table->decimal('balance_after', 12, 2);
-            $table->foreignId('destination_account_id')->nullable()->constrained('accounts');
-            $table->string('reference_number')->unique();
+            $table->foreignId('destination_account_id')->nullable()->constrained('accounts')->cascadeOnDelete();
+            $table->foreignId('source_account_id')->nullable()->constrained('accounts')->cascadeOnDelete();
             $table->string('status')->default('completed');
             $table->text('description')->nullable();
             $table->timestamps();

@@ -13,7 +13,7 @@ class Transaction extends Model
         'amount',
         'balance_after',
         'destination_account_id',
-        'reference_number',
+        'source_account_id',
         'status',
         'description',
     ];
@@ -31,5 +31,10 @@ class Transaction extends Model
     public function destinationAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'destination_account_id');
+    }
+
+    public function sourceAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'source_account_id');
     }
 }

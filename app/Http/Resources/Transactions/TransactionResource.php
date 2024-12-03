@@ -20,7 +20,6 @@ class TransactionResource extends JsonResource
             'type' => $this->type,
             'amount' => number_format($this->amount, 2, '.', ''),
             'balance_after' => number_format($this->balance_after, 2, '.', ''),
-            'reference_number' => $this->reference_number,
             'status' => $this->status,
             'description' => $this->description,
             'account' => new AccountResource($this->whenLoaded('account')),

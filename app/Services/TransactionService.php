@@ -24,7 +24,6 @@ class TransactionService
                 'type' => 'deposit',
                 'amount' => $amount,
                 'balance_after' => $newBalance,
-                'reference_number' => $this->generateReferenceNumber(),
                 'status' => 'completed',
                 'description' => $description,
             ]);
@@ -46,7 +45,6 @@ class TransactionService
                 'type' => 'withdrawal',
                 'amount' => $amount,
                 'balance_after' => $newBalance,
-                'reference_number' => $this->generateReferenceNumber(),
                 'status' => 'completed',
                 'description' => $description,
             ]);
@@ -64,29 +62,33 @@ class TransactionService
             $fromNewBalance = $fromAccount->balance - $amount;
             $this->accountService->updateBalance($fromAccount, $fromNewBalance);
 
-            // Add to destination account
-            $toNewBalance = $toAccount->balance + $amount;
-            $this->accountService->updateBalance($toAccount, $toNewBalance);
-
-            return Transaction::create([
+            // Create Debit Transaction for Sender
+            $debitTransaction = Transaction::create([
                 'account_id' => $fromAccount->id,
                 'type' => 'transfer',
-                'amount' => $amount,
+                'amount' => -$amount,
                 'balance_after' => $fromNewBalance,
                 'destination_account_id' => $toAccount->id,
-                'reference_number' => $this->generateReferenceNumber(),
                 'status' => 'completed',
                 'description' => $description,
             ]);
+
+            // Add to Destination Account
+            $toNewBalance = $toAccount->balance + $amount;
+            $this->accountService->updateBalance($toAccount, $toNewBalance);
+
+            // Create credit transaction for receiver
+            Transaction::create([
+                'account_id' => $toAccount->id,
+                'type' => 'transfer',
+                'amount' => $amount,
+                'balance_after' => $toNewBalance,
+                'source_account_id' => $fromAccount->id,
+                'status' => 'completed',
+                'description' => $description,
+            ]);
+
+            return $debitTransaction;
         });
-    }
-
-    private function generateReferenceNumber(): string
-    {
-        do {
-            $reference = 'TXN-' . strtoupper(Str::random(10));
-        } while (Transaction::where('reference_number', $reference)->exists());
-
-        return $reference;
     }
 }
