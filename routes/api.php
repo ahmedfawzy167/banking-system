@@ -4,14 +4,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Middleware\SetJsonHeader;
 
 // Public Routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::middleware(SetJsonHeader::class)->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 // Protected Routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware([SetJsonHeader::class, 'auth:sanctum'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
@@ -35,4 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/history', [TransactionController::class, 'history']);
     });
     /* End of Transactions Routes */
+
+    /* Start of Settings Routes */
+    Route::get('/settings', [SettingController::class, 'index']);
+    /* End of Settings Routes */
 });
