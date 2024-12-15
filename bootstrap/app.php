@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SetLang;
 use App\Http\Middleware\SetJsonHeader;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->api(append: [
             SetJsonHeader::class,
+            SetLang::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

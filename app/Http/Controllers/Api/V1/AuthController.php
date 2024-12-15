@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Models\User;
 use App\Traits\ApiResponder;
@@ -26,10 +26,10 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Dispatch the UserRegistered Event
+        // Fire the Event
         event(new UserRegistered($user));
 
-        return $this->created(new UserResource($user), "Registeration is Done");
+        return $this->created(new UserResource($user), __('admin.register'));
     }
 
     public function login(LoginRequest $request)
@@ -45,7 +45,7 @@ class AuthController extends Controller
         return $this->success([
             'user' => new UserResource($user),
             'token' => $token,
-        ], 'Login Successfully');
+        ], __('admin.login'));
     }
 
     public function logout(Request $request)
@@ -61,13 +61,13 @@ class AuthController extends Controller
         if ($user->currentAccessToken()) {
             $user->currentAccessToken()->delete();
         }
-        return $this->success(new UserResource($user), "Logout Successfully");
+        return $this->success(new UserResource($user), __('admin.logout'));
     }
 
     public function profile(Request $request)
     {
         $user = $request->user();
-        return $this->success(new UserResource($user), "Profile Retrieved Successfully");
+        return $this->success(new UserResource($user), __('admin.profile'));
     }
 
     public function updateProfile(UpdateProfileRequest $request)
@@ -76,7 +76,7 @@ class AuthController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->save();
-        return $this->success(new UserResource($user), "Profile Updated Successfully");
+        return $this->success(new UserResource($user), __('admin.update_profile'));
     }
 
     public function updatePassword(UpdatePasswordRequest $request)
@@ -88,6 +88,6 @@ class AuthController extends Controller
         }
         $user->password = Hash::make($request->new_password);
         $user->save();
-        return $this->success(new UserResource($user), "Password Updated Successfully");
+        return $this->success(new UserResource($user), __('update_password'));
     }
 }

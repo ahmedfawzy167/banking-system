@@ -15,7 +15,7 @@ trait ApiResponder
         ], $statusCode);
     }
 
-    protected function created($data = null, $message = 'Created successfully', $statusCode = 201): JsonResponse
+    protected function created($data = null, $message = 'Created Successfully', $statusCode = 201): JsonResponse
     {
         return $this->success($data, $message, $statusCode);
     }
@@ -38,7 +38,7 @@ trait ApiResponder
         return $this->error($message, 409);
     }
 
-    protected function unauthorized($message = 'Unauthorized'): JsonResponse
+    protected function unauthorized($message = 'UnAuthorized'): JsonResponse
     {
         return $this->error($message, 401);
     }

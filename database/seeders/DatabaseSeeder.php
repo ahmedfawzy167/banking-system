@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             AccountSeeder::class,
             SettingSeeder::class,
+            CountrySeeder::class,
+            CitySeeder::class,
+            AddressSeeder::class,
         ]);
     }
 }
