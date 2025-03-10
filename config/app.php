@@ -123,4 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'instance_id' => env('WHATSAPP_INSTANCE_ID'),
+    'api_key' => env('WHATSAPP_API_KEY'),
+
 ];

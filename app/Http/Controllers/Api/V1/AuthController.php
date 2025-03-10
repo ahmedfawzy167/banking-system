@@ -6,26 +6,38 @@ use App\Models\User;
 use App\Traits\ApiResponder;
 use Illuminate\Http\Request;
 use App\Events\UserRegistered;
+use App\Services\WhatsAppService;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\Users\UserResource;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Requests\Auth\UpdatePasswordRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Http\Requests\Auth\UpdatePasswordRequest;
 
 class AuthController extends Controller
 {
     use ApiResponder;
 
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request, WhatsAppService $whatsappService)
     {
+        $otp = rand(100000, 999999); 
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'phone_number' => $request->phone_number,
+            'otp' => Hash::make($otp),
         ]);
 
+        // Send OTP via WhatsApp
+        $response = $whatsappService->sendWhatsAppOTP($user->phone_number, $otp);
+
+       if ($response['status'] !== 'success') {
+        return $this->serverError('Failed to Send OTP');
+       }
+        
         // Fire the Event
         event(new UserRegistered($user));
 
