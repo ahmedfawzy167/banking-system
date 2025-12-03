@@ -32,12 +32,9 @@ class AuthController extends Controller
         ]);
 
         // Send OTP via WhatsApp
-        $response = $whatsappService->sendWhatsAppOTP($user->phone_number, $otp);
+        $whatsappService->sendWhatsAppOTP($user->phone_number, $otp);
 
-       if ($response['status'] !== 'success') {
-        return $this->serverError('Failed to Send OTP');
-       }
-        
+
         // Fire the Event
         event(new UserRegistered($user));
 

@@ -44,5 +44,9 @@ return [
       'token' => env('TWILIO_AUTH_TOKEN'),
       'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),
      ],
+     'hypersender' => [
+        'instance_id' => env('WHATSAPP_INSTANCE_ID'),
+        'api_key' => env('WHATSAPP_API_KEY'),
+    ],
 
 ];
