@@ -19,13 +19,15 @@ class UserSeeder extends Seeder
             'email' => 'ahmed@gmail.com',
             'password' => Hash::make('12345password'),
             'phone_number' => '+201063574479',
+            'otp' => '123456',
         ]);
 
         User::create([
-            'name' => 'Ghada',
-            'email' => 'ghada@gmail.com',
+            'name' => 'laila',
+            'email' => 'laila@gmail.com',
             'password' => Hash::make('5678password'),
             'phone_number' => '+201001919635',
+            'otp' => '654321',
         ]);
     }
 }
